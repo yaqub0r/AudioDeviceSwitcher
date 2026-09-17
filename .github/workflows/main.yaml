@@ -25,8 +25,21 @@ jobs:
       - uses: microsoft/setup-msbuild@6fb02220983dee41ce7ae257b6f4d8f9bf5ed4ce # v2
       - name: Test without changing host audio devices
         run: dotnet test test/AudioDeviceSwitcher.Tests.csproj -p:Platform=x64 -p:Configuration=Release --filter "FullyQualifiedName!~AudioPageViewModelTests" --logger trx --results-directory TestResults
-      - name: Build Windows application
-        run: msbuild src/AudioDeviceSwitcher/AudioDeviceSwitcher.csproj /restore /p:Platform=x64 /p:Configuration=Release /p:AppxPackageSigningEnabled=false /verbosity:minimal
+      - name: Build unsigned personal package
+        run: msbuild "src/AudioDeviceSwitcher (Package)/AudioDeviceSwitcher (Package).wapproj" /restore /p:Platform=x64 /p:Configuration=Release /p:AppxPackageSigningEnabled=false /p:AppxBundle=Never /p:UapAppxPackageBuildMode=SideloadOnly /verbosity:minimal
+      - name: Build migration utility
+        run: dotnet publish tools/SettingsMigration/SettingsMigration.csproj -p:Platform=x64 -c Release -r win-x64 --self-contained true -o artifacts/migration-tool
+      - name: Upload unsigned package and migration utility
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: personal-package-x64-unsigned
+          path: |
+            AppPackages/**/*.msix
+            AppPackages/**/*.appx
+            artifacts/migration-tool/**
+            scripts/*.ps1
+          if-no-files-found: error
+          retention-days: 14
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
