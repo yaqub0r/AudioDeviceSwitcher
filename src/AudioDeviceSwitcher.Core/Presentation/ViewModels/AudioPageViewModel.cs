@@ -56,6 +56,9 @@ public sealed partial class AudioPageViewModel : IDisposable
 
     private IEnumerable<AudioDeviceViewModel> SelectedDevices => _selectedDevices.Cast<AudioDeviceViewModel>();
 
+    [PropertyInvalidate(nameof(IsExecuting))]
+    public bool IsReady => CanExecute();
+
     public async Task InitializeAsync(AudioDeviceClass deviceClass, bool watch = true, IList<object>? selectedDevices = null)
     {
         _deviceClass = deviceClass;
@@ -94,9 +97,14 @@ public sealed partial class AudioPageViewModel : IDisposable
 
     public void SaveSelectedCommand()
     {
+        if (!CanExecute())
+            return;
+
         var command = SelectedCommand;
-        command.DeviceIds = SelectedDevices.Select(x => x.Id).ToArray();
-        _audioSwitcher.SaveCommand(ToModel(command));
+        var saved = ToModel(command);
+        command.DeviceIds = saved.Devices;
+        command.DeviceNames = saved.DeviceNames;
+        _audioSwitcher.SaveCommand(saved);
     }
 
     [Command(CanExecuteMethod = nameof(CanExecute))]
@@ -104,7 +112,8 @@ public sealed partial class AudioPageViewModel : IDisposable
     {
         try
         {
-            await _audioSwitcher.ToggleAsync(_deviceClass, SelectedDevices.Select(x => x.Id), _notificationService);
+            SaveSelectedCommand();
+            await _audioSwitcher.ExecuteCommandAsync(ToModel(SelectedCommand));
         }
         catch (Exception e)
         {
@@ -217,11 +226,21 @@ public sealed partial class AudioPageViewModel : IDisposable
 
     public Command ToModel(AudioCommandViewModel cmd)
     {
+        var selected = SelectedDevices.ToArray();
+
+        // Only a deliberate deselection of a present device removes it from the command.
+        var ids = cmd.DeviceIds.Where(id => !Devices.Any(d => d.Id == id) || selected.Any(d => d.Id == id))
+            .Concat(selected.Select(d => d.Id)).Distinct().ToArray();
+        var names = cmd.DeviceNames.Where(pair => ids.Contains(pair.Key)).ToDictionary(pair => pair.Key, pair => pair.Value);
+        foreach (var device in selected)
+            names[device.Id] = device.FullName;
+
         return new(cmd.Name, _deviceClass)
         {
             Action = CommandType.Set,
             Hotkey = cmd.Hotkey,
-            Devices = SelectedDevices.Select(x => x.Id).ToArray(),
+            Devices = ids,
+            DeviceNames = names,
         };
     }
 
@@ -232,6 +251,7 @@ public sealed partial class AudioPageViewModel : IDisposable
             Name = command.Name,
             Hotkey = command.Hotkey,
             DeviceIds = command.Devices,
+            DeviceNames = command.DeviceNames,
         };
     }
 
@@ -301,6 +321,17 @@ public sealed partial class AudioPageViewModel : IDisposable
 
     public async Task LoadCommandAsync(AudioCommandViewModel command)
     {
+        using var executing = new ExecutingBlock(this);
+        var saved = await _audioSwitcher.RefreshCommandDevicesAsync(new Command(command.Name, _deviceClass)
+        {
+            Devices = command.DeviceIds,
+            DeviceNames = command.DeviceNames,
+        });
+        command.DeviceIds = saved.Devices;
+        command.DeviceNames = saved.DeviceNames;
+        if (!ReferenceEquals(SelectedCommand, command))
+            return;
+
         SelectDevices(Devices.Where(x => command.DeviceIds.Contains(x.Id)));
         await TrySetHotkeyAsync(command.Hotkey, false);
         Command = GetCmd();
@@ -403,12 +434,15 @@ public sealed partial class AudioPageViewModel : IDisposable
 
     private async Task OnEvent(AudioDeviceAdded e)
     {
+        using var executing = new ExecutingBlock(this);
         var device = e.Device;
         if (Devices.Any(x => x.Id == device.Id))
             return;
 
         var deviceVm = AudioDeviceViewModel.Create(_audioManager, device, _deviceClass);
         Devices.Add(deviceVm);
+        if (!string.IsNullOrEmpty(SelectedCommand.Name))
+            await LoadCommandAsync(SelectedCommand);
         try
         {
             var deviceInfo = await DeviceInformation.CreateFromIdAsync(device.Id);
@@ -421,6 +455,7 @@ public sealed partial class AudioPageViewModel : IDisposable
 
     private void OnEvent(AudioDeviceUpdated e)
     {
+        using var executing = new ExecutingBlock(this);
         var changes = e.Changes;
         var deviceVm = Devices.FirstOrDefault(x => x.Id == e.Id);
         if (deviceVm != null)
@@ -432,6 +467,7 @@ public sealed partial class AudioPageViewModel : IDisposable
 
     private void OnEvent(AudioDeviceRemoved deviceRemoved)
     {
+        using var executing = new ExecutingBlock(this);
         Devices.Remove(x => x.Id == deviceRemoved.Id);
     }
 

@@ -10,4 +10,5 @@ public sealed partial class AudioCommandViewModel
     [Property] private string _name = string.Empty;
     [Property] private Hotkey _hotkey = new();
     [Property] private string[] _deviceIds = Array.Empty<string>();
+    [Property] private Dictionary<string, string> _deviceNames = new();
 }

@@ -13,7 +13,7 @@
         <MenuFlyout x:Name="MenuFlyoutContext" />
     </UserControl.Resources>
 
-    <Grid Padding="15,10" ColumnSpacing="5" RowSpacing="7">
+    <Grid Padding="15,10" ColumnSpacing="5" RowSpacing="7" IsEnabled="{x:Bind ViewModel.IsReady, Mode=OneWay}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />

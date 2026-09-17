@@ -24,4 +24,5 @@ public sealed record Command
     public int HotkeyId => (int)Name.GetDjb2HashCode();
     public Hotkey Hotkey { get; init; } = new();
     public string[] Devices { get; init; } = Array.Empty<string>();
+    public Dictionary<string, string> DeviceNames { get; init; } = new();
 }
