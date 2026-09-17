@@ -8,7 +8,7 @@ This fork fixes saved device selections in [josetr/AudioDeviceSwitcher](https://
 
 Commands retain their selected device IDs and remember each device's full name. If Windows replaces an ID, the app recovers it when exactly one device in the same playback/recording category has the saved full name. Exact IDs take priority. Ambiguous names are not guessed, and missing devices remain saved for when they return. Recovery runs on startup and before executing a saved command, including background hotkeys.
 
-Existing settings remain readable. Names are learned automatically for saved IDs that Windows still recognizes. An already-missing legacy ID has no saved name, so it cannot be recovered automatically; selecting its replacement once establishes the new mapping. To discard an unavailable selection permanently, recreate that command. A present device can still be deselected normally.
+Existing settings remain readable. Names are learned automatically for saved IDs that Windows still recognizes. During migration from the Store app, the migration utility can also recover an old ID from an exact, unique entry in Windows' retained endpoint history. When neither a name nor endpoint history is available, the original selection is preserved without guessing. To discard an unavailable selection permanently, recreate that command. A present device can still be deselected normally.
 
 ## Development and validation
 
@@ -20,9 +20,13 @@ Run the tests that do not change real audio devices:
 dotnet test test/AudioDeviceSwitcher.Tests.csproj -p:Platform=x64 --filter "FullyQualifiedName!~AudioPageViewModelTests"
 ```
 
-The excluded `AudioPageViewModelTests` are hardware integration tests: they switch real default devices and change device visibility. The new `DeviceRecoveryTests` use mocks and cover the page's persistence behavior without those side effects. CI runs the safe suite and compiles the Windows app; it does not install drivers, sign packages, or publish to the Microsoft Store.
+The excluded `AudioPageViewModelTests` are hardware integration tests: they switch real default devices and change device visibility. The new `DeviceRecoveryTests` use mocks and cover the page's persistence behavior without those side effects. CI runs the safe suite and builds an unsigned x64 MSIX plus a migration utility; it does not install drivers, sign packages, or publish to the Microsoft Store.
 
-The inherited package manifest still identifies the upstream Store application. A separately installable fork needs its own package identity, signing plan, and settings migration. Do not use an unsigned development build to overwrite the installed Store app. No release installer is provided by this change.
+## Personal installation
+
+The package is named **Audio Device Switcher (Personal)**, with identity `yaqub0r.AudioDeviceSwitcher`, publisher `CN=yaqub0r.AudioDeviceSwitcher`, and command alias `AudioDeviceSwitcherPersonal.exe`. It has a separate settings store and process identity. The Store app remains available for rollback, but only one should run at a time because their migrated hotkeys overlap.
+
+See [INSTALL.md](INSTALL.md) for signing, migration, installation preview, and rollback. CI artifacts are unsigned development builds. The signing key stays on the owner's PC and is never uploaded. Certificate trust is an explicit step; the installer never changes trust stores.
 
 
 Audio Device Switcher is a Windows 10 app that makes it easy to quickly switch your default playback device as well as your recording device using hotkeys.

@@ -11,8 +11,17 @@ const string publisher = "CN=yaqub0r.AudioDeviceSwitcher";
 var jsonOptions = new JsonSerializerOptions { WriteIndented = true };
 try
 {
-    if (args.Length != 2 || (args[0] != "prepare" && args[0] != "import" && args[0] != "verify"))
-        throw new ArgumentException("Usage: SettingsMigration prepare <new-backup-directory> | import <prepared-settings.json> | verify <prepared-settings.json>");
+    if (args.Length != 2 || (args[0] != "prepare" && args[0] != "import" && args[0] != "verify" && args[0] != "verify-source"))
+        throw new ArgumentException("Usage: SettingsMigration prepare <new-backup-directory> | import <prepared-settings.json> | verify <prepared-settings.json> | verify-source <original-settings.json>");
+
+    if (args[0] == "verify-source")
+    {
+        var current = ApplicationDataManager.CreateForPackageFamily(legacyFamily).LocalSettings.Values["settings"] as string;
+        if (current != File.ReadAllText(args[1]))
+            throw new InvalidOperationException("Store settings changed after the backup. Prepare a new migration before installing.");
+        Console.WriteLine("Store settings still match the untouched backup.");
+        return 0;
+    }
 
     if (args[0] == "prepare")
     {
@@ -81,6 +90,10 @@ try
 
         if (actual.Commands.Count != expected.Commands.Count)
             throw new InvalidOperationException("Command counts differ.");
+        if (actual.RunAtStartup != expected.RunAtStartup || actual.RunAtStartupMinimized != expected.RunAtStartupMinimized
+            || actual.RunInBackground != expected.RunInBackground || actual.ShowDisabledDevices != expected.ShowDisabledDevices
+            || actual.SwitchCommunicationDevice != expected.SwitchCommunicationDevice || actual.DarkTheme != expected.DarkTheme)
+            throw new InvalidOperationException("Application preferences differ.");
         Console.WriteLine($"Verified all {expected.Commands.Count} migrated commands and hotkeys.");
     }
 
