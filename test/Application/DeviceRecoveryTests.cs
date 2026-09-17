@@ -94,6 +94,30 @@ public class DeviceRecoveryTests
         Assert.Equal(new[] { "new" }, model.ToModel(model.SelectedCommand).Devices);
     }
 
+    [Fact]
+    public async Task DelayedRefreshCannotSelectDevicesForThePreviousCommand()
+    {
+        var fixture = new Fixture();
+        using var model = fixture.CreatePage();
+        await model.InitializeAsync(AudioDeviceClass.Render, watch: false);
+        var previous = model.SelectedCommand;
+        var otherHotkey = new Hotkey(KeyModifiers.Control, Key.A);
+        var other = fixture.Switcher.AddCommand("Other", AudioDeviceClass.Render, otherHotkey);
+        var pending = new TaskCompletionSource<AudioDevice[]>();
+        fixture.Audio.SetupSequence(x => x.GetAllDevicesAsync(AudioDeviceClass.Render))
+            .Returns(pending.Task).ReturnsAsync(fixture.Available);
+
+        var firstLoad = model.LoadCommandAsync(previous);
+        model.SelectedCommand = model.ToViewModel(other);
+        await model.LoadCommandAsync(model.SelectedCommand);
+        pending.SetResult(fixture.Available);
+        await firstLoad;
+
+        Assert.Equal(otherHotkey, model.Hotkey);
+        Assert.Empty(model.ToModel(model.SelectedCommand).Devices);
+        Assert.True(model.IsReady);
+    }
+
     private sealed class Fixture
     {
         public Fixture(AudioDeviceClass type = AudioDeviceClass.Render)
