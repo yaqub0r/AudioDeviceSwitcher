@@ -54,10 +54,10 @@ public sealed partial class AudioPageViewModel : IDisposable
         InitializeCommands();
     }
 
-    private IEnumerable<AudioDeviceViewModel> SelectedDevices => _selectedDevices.Cast<AudioDeviceViewModel>();
-
     [PropertyInvalidate(nameof(IsExecuting))]
     public bool IsReady => CanExecute();
+
+    private IEnumerable<AudioDeviceViewModel> SelectedDevices => _selectedDevices.Cast<AudioDeviceViewModel>();
 
     public async Task InitializeAsync(AudioDeviceClass deviceClass, bool watch = true, IList<object>? selectedDevices = null)
     {
