@@ -2,14 +2,15 @@
 
 namespace AudioDeviceSwitcher;
 
-using System.Diagnostics;
 using Microsoft.UI.Xaml.Controls;
+using Windows.ApplicationModel;
 
 public sealed partial class AboutPage : Page
 {
     public AboutPage()
     {
-        Version = Process.GetCurrentProcess().MainModule?.FileVersionInfo?.ProductVersion?.ToString();
+        var version = Package.Current.Id.Version;
+        Version = $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
         InitializeComponent();
     }
 
