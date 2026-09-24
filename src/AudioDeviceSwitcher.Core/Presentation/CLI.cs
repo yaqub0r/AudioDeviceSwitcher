@@ -86,7 +86,7 @@ public sealed class CLI
         if (!devices.Any())
             return string.Empty;
 
-        return $"AudioDeviceSwitcher {BuildCommandArgs(deviceClass, devices)}";
+        return $"{AudioSwitcherState.ExecutionAlias} {BuildCommandArgs(deviceClass, devices)}";
     }
 
     public static string BuildCommandArgs(AudioDeviceClass deviceClass, AudioDevice[] devices)

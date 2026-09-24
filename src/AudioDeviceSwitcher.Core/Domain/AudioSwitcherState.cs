@@ -4,9 +4,10 @@ namespace AudioDeviceSwitcher;
 
 public sealed record AudioSwitcherState
 {
-    public static string Repository { get; } = "https://github.com/josetr/AudioDeviceSwitcher";
+    public static string Repository { get; } = "https://github.com/yaqub0r/AudioDeviceSwitcher";
     public static string Discord { get; } = "https://discord.gg/RZtgA6P4XP";
-    public static string Title { get; } = "Audio Device Switcher";
+    public static string Title { get; } = "Audio Device Switcher (Personal)";
+    public static string ExecutionAlias { get; } = "AudioDeviceSwitcherPersonal";
     public List<Command> Commands { get; set; } = new();
     public bool RunAtStartup { get; set; } = true;
     public bool RunAtStartupMinimized { get; set; } = true;

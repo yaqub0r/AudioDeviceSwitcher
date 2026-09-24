@@ -13,7 +13,7 @@ public sealed class AudioSwitcherToggler
         this.notificationService = notificationService;
     }
 
-    public async Task ToggleAsync(AudioDeviceClass deviceClass, IEnumerable<string> devices, bool switchCommunicationDevice)
+    public async Task ToggleAsync(AudioDeviceClass deviceClass, IEnumerable<string> devices, bool switchCommunicationDevice, IReadOnlyDictionary<string, string>? savedNames = null)
     {
         var availableDevices = await audioManager.GetAllDevicesAsync(deviceClass);
 
@@ -29,7 +29,13 @@ public sealed class AudioSwitcherToggler
                 continue;
 
             var device = availableDevices.FirstOrDefault(x => x.Id == deviceId);
-            var deviceName = device?.Name ?? deviceId;
+            var deviceName = device?.Name ?? (savedNames != null && savedNames.TryGetValue(deviceId, out var name) ? name : deviceId);
+
+            if (device == null)
+            {
+                skipped.Add($"⚠️ Saved device '{deviceName}' is unavailable or cannot be matched uniquely. Its selection has been kept.");
+                continue;
+            }
 
             if (!audioManager.GetState(deviceId).HasFlag(AudioDeviceState.Active))
             {

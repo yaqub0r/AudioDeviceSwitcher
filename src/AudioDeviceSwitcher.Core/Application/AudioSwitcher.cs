@@ -57,6 +57,9 @@ public sealed partial class AudioSwitcher
             state.Commands.Add(new("Default recording command", AudioDeviceClass.Capture));
 
         RegisterHotkeys();
+
+        foreach (var command in Commands.ToArray())
+            await RefreshCommandDevicesAsync(command);
     }
 
     public void Save()
@@ -121,9 +124,33 @@ public sealed partial class AudioSwitcher
     public async Task ExecuteCommandsAsync(IEnumerable<Command> commands)
     {
         var notificationService = new GroupNotificationService(this.notificationService);
-        foreach (var command in commands)
-            await ToggleAsync(command.DeviceClass, command.Devices, notificationService);
+        foreach (var savedCommand in commands.ToArray())
+        {
+            var command = await RefreshCommandDevicesAsync(savedCommand);
+            var toggler = new AudioSwitcherToggler(AudioManager, notificationService);
+            await toggler.ToggleAsync(command.DeviceClass, command.Devices, state.SwitchCommunicationDevice, command.DeviceNames);
+        }
+
         notificationService.Commit();
+    }
+
+    public async Task<Command> RefreshCommandDevicesAsync(Command command)
+    {
+        var availableDevices = await AudioManager.GetAllDevicesAsync(command.DeviceClass);
+        var index = state.Commands.FindIndex(x => x.Name == command.Name);
+
+        // A visible page can hold an older copy after a background hotkey repaired the IDs.
+        if (index >= 0)
+            command = state.Commands[index];
+
+        var resolved = DeviceSelectionResolver.Resolve(command, availableDevices);
+        if (index >= 0 && !ReferenceEquals(resolved, command))
+        {
+            state.Commands[index] = resolved;
+            Save();
+        }
+
+        return resolved;
     }
 
     public void RegisterHotkeys()

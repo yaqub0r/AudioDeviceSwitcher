@@ -14,7 +14,7 @@ using System.Reflection.Metadata.Ecma335;
 
 public sealed partial class App : Application, IApp
 {
-    public const string Id = "JoseTorres:AudioDeviceSwitcher";
+    public const string Id = "yaqub0r:AudioDeviceSwitcher";
     private static Kernel32.SafeObjectHandle? _mutex;
     private static MainWindow? _window;
 

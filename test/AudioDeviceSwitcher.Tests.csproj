@@ -26,5 +26,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\src\AudioDeviceSwitcher.Core\AudioDeviceSwitcher.Core.csproj" />
+    <Compile Include="../tools/SettingsMigration/LegacyDeviceMigration.cs" Link="Migration/LegacyDeviceMigration.cs" />
   </ItemGroup>
 </Project>

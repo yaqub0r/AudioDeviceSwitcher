@@ -1,4 +1,4 @@
-﻿<Page
+<Page
     x:Class="AudioDeviceSwitcher.AudioPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -30,7 +30,7 @@
         </Grid.RowDefinitions>
 
         <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center">Name</TextBlock>
-        <ComboBox Grid.Row="0" Grid.Column="1" x:Name="ComboBox" HorizontalAlignment="Stretch" ItemsSource="{x:Bind ViewModel.Commands}" SelectedItem="{x:Bind ViewModel.SelectedCommand, Mode=TwoWay}" SelectionChanged="{x:Bind ViewModel.CommandSelectionChanged}">
+        <ComboBox Grid.Row="0" Grid.Column="1" x:Name="ComboBox" IsEnabled="{x:Bind ViewModel.IsReady, Mode=OneWay}" HorizontalAlignment="Stretch" ItemsSource="{x:Bind ViewModel.Commands}" SelectedItem="{x:Bind ViewModel.SelectedCommand, Mode=TwoWay}" SelectionChanged="{x:Bind ViewModel.CommandSelectionChanged}">
             <ComboBox.ItemTemplate>
                 <DataTemplate x:DataType="local:AudioCommandViewModel">
                     <StackPanel>
@@ -54,7 +54,7 @@
         </StackPanel>
 
         <TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center">Hotkey</TextBlock>
-        <TextBox PlaceholderText="Must begin with ctrl or alt" Grid.Row="1" Grid.Column="1" x:Name="Hotkey" Text="{x:Bind ViewModel.Hotkey, Mode=OneWay}" HorizontalAlignment="Stretch" ProcessKeyboardAccelerators="HotKey_ProcessKeyboardAccelerators" LostFocus="Hotkey_LostFocus" TextChanged="Hotkey_TextChanged" />
+        <TextBox PlaceholderText="Must begin with ctrl or alt" Grid.Row="1" Grid.Column="1" x:Name="Hotkey" IsEnabled="{x:Bind ViewModel.IsReady, Mode=OneWay}" Text="{x:Bind ViewModel.Hotkey, Mode=OneWay}" HorizontalAlignment="Stretch" ProcessKeyboardAccelerators="HotKey_ProcessKeyboardAccelerators" LostFocus="Hotkey_LostFocus" TextChanged="Hotkey_TextChanged" />
         <Button Grid.Row="1" Grid.Column="2" HorizontalAlignment="Stretch" Background="Transparent" Command="{x:Bind ViewModel.ToggleAsyncCommand}">
             <ToolTipService.ToolTip>
                 <TextBlock Text="Run command"/>
@@ -64,7 +64,7 @@
             </StackPanel>
         </Button>
 
-        <ListView Grid.Row="2" Grid.ColumnSpan="3" VerticalAlignment="Stretch" x:Name="AudioListView" ItemsSource="{x:Bind ViewModel.FilteredDevices, Mode=OneWay}" ScrollViewer.VerticalScrollBarVisibility="Auto" SelectionMode="Multiple" RightTapped="AudioListView_RightTapped" SelectionChanged="{x:Bind ViewModel.DeviceSelectionChanged}">
+        <ListView Grid.Row="2" Grid.ColumnSpan="3" VerticalAlignment="Stretch" x:Name="AudioListView" IsEnabled="{x:Bind ViewModel.IsReady, Mode=OneWay}" ItemsSource="{x:Bind ViewModel.FilteredDevices, Mode=OneWay}" ScrollViewer.VerticalScrollBarVisibility="Auto" SelectionMode="Multiple" RightTapped="AudioListView_RightTapped" SelectionChanged="{x:Bind ViewModel.DeviceSelectionChanged}">
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="local:AudioDeviceViewModel">
                     <StackPanel Orientation="Horizontal" Margin="0,3">
