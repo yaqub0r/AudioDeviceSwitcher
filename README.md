@@ -2,6 +2,8 @@
 
 [![CI](https://github.com/yaqub0r/AudioDeviceSwitcher/actions/workflows/main.yaml/badge.svg)](https://github.com/yaqub0r/AudioDeviceSwitcher/actions)
 
+Distribution is planned through GitHub Releases with manual downloads. Public installer releases are not available yet; see [the release process](RELEASE.md) for build, signing, and publication requirements.
+
 This fork fixes saved device selections in [josetr/AudioDeviceSwitcher](https://github.com/josetr/AudioDeviceSwitcher). The Microsoft Store version does not include these changes.
 
 ## Device selection recovery

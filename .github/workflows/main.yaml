@@ -3,6 +3,7 @@ name: CI
 on:
   push:
     branches: [master]
+    tags: ['v*']
   pull_request:
   workflow_dispatch:
 
@@ -19,6 +20,21 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Validate release metadata checks
+        shell: pwsh
+        run: ./scripts/Test-ReleaseVersion.ps1
+      - name: Validate release tag and merged commit
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: pwsh
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          ./scripts/Get-ReleaseVersion.ps1 -Tag $env:RELEASE_TAG
+          git merge-base --is-ancestor HEAD origin/master
+          if ($LASTEXITCODE -ne 0) { throw 'Release tags must point to code merged into master.' }
       - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
         with:
           dotnet-version: '6.0.x'
@@ -48,3 +64,32 @@ jobs:
           path: TestResults/*.trx
           if-no-files-found: warn
           retention-days: 14
+
+  draft-release:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - name: Create draft for signing and installation review
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+          SOURCE_COMMIT: ${{ github.sha }}
+          BUILD_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          cat > release-notes.md <<EOF
+          Maintainer draft — not ready for publication.
+
+          Source commit: $SOURCE_COMMIT
+          Verified build: $BUILD_URL
+
+          The unsigned package and migration tools are retained as CI artifacts for 14 days. They are not installable release downloads.
+
+          Before publishing, follow RELEASE.md: download this exact build, sign and timestamp the app package, include required x64 framework dependencies and user instructions, validate clean installation and upgrade, and attach the signed distribution with its SHA-256 checksums. Replace these draft notes with user-facing changes and installation instructions. Do not publish until runtime modernization and public signing are resolved.
+          EOF
+          gh release create "$RELEASE_TAG" --verify-tag --draft --title "Audio Device Switcher $RELEASE_TAG" --notes-file release-notes.md
