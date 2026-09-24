@@ -1,12 +1,24 @@
-# Personal build installation
+# Fork installation and upgrades
 
-This is a personal development build of the fork, not a Microsoft Store release. It retains the original .NET 6 / Windows App SDK 1.1 dependency baseline. Modernizing those unsupported dependencies is a separate maintenance task.
+This is the yaqub0r-maintained fork, not a release from the original Microsoft Store listing. It retains the original .NET 6 / Windows App SDK 1.1 dependency baseline. Modernizing those unsupported dependencies is a separate maintenance task before a general public release.
+
+## Upgrade from the Personal build and replace the Store app
+
+Version 1.1.1.0 removes “(Personal)” from the visible name without changing package name, publisher, or settings identity. Use a higher-versioned MSIX signed with the existing certificate; do not uninstall the fork before upgrading it. The standard `AudioDeviceSwitcher.exe` alias is now provided, while `AudioDeviceSwitcherPersonal.exe` remains as a compatibility alias.
+
+1. Verify the build's CI result, manifest identity/version, signed-package hash, and trusted signer, as described below.
+2. Stop both apps using their exact installed package paths. Run the new migration utility's `backup <new-private-backup-directory>` command. It backs up the fork's current settings and, if installed, the Store app's settings without overwriting either. Keep the previous signed MSIX as well.
+3. Run `Add-AppxPackage -Path <signed-msix>` to upgrade the fork in place. Run `SettingsMigration.exe verify-backup <backup-directory>` before launching to confirm that every saved setting is unchanged.
+4. Check that the fork's startup preference is retained. Remove only the original package for the current user: `Get-AppxPackage -Name 16084JoseTorres.AudioDeviceSwitcher | Remove-AppxPackage`. This removes the Store app's live data, so retain the settings backup first. Do not remove `yaqub0r.AudioDeviceSwitcher` or shared runtime dependencies.
+5. Open **Audio Device Switcher**, check the About repository points to `yaqub0r/AudioDeviceSwitcher`, and test a saved hotkey. Re-pin the app if a pinned shortcut belonged to the removed Store app.
+
+After removal, the old startup-handover rollback script alone cannot restore the Store app. Recovery requires reinstalling the original Store package and restoring its saved settings, or reinstalling the retained previous fork package and restoring its fork settings. Keep backups private and do not commit them or attach them to public issues.
 
 ## Build and provenance
 
 CI produces the `personal-package-x64-unsigned` artifact after the safe test suite and MSIX build succeed. Use the artifact from the exact reviewed commit. It contains the unsigned personal package, any generated framework packages, a self-contained migration utility, and installer scripts.
 
-The app's identity and execution alias differ from upstream. Its startup entry is disabled in the package manifest so merely installing it cannot compete with the Store app at the next login.
+The app's identity differs from upstream. Its startup entry is disabled in the package manifest so merely installing it cannot compete with the Store app at the next login. The standard execution alias is shared with upstream, so complete migration and remove the old app before relying on it.
 
 ## Back up and prepare settings
 
@@ -36,7 +48,7 @@ Run `scripts/Install-Personal.ps1` with these mandatory arguments:
 - `ExpectedPackageSha256`: the reviewed signed-package SHA-256.
 - `ExpectedSignerThumbprint`: the reviewed certificate thumbprint.
 
-Without `-Apply`, it validates the package identity, hash, signer, and unchanged source backup and shows a preview. With `-Apply`, it additionally requires a trusted, valid signature, installs the separate package, imports into an empty settings store, verifies all commands, records rollback information, transfers startup preference, and stops only the original package's process. Then launch **Audio Device Switcher (Personal)** and test the hotkeys. The Store package and its settings are retained.
+Without `-Apply`, it validates the package identity, hash, signer, and unchanged source backup and shows a preview. With `-Apply`, it additionally requires a trusted, valid signature, installs the separate package, imports into an empty settings store, verifies all commands, records rollback information, transfers startup preference, and stops only the original package's process. Then launch **Audio Device Switcher** and test the hotkeys. This first-install script retains the Store package and its settings; remove it after verification using the replacement steps above.
 
 The script is intentionally for first installation. It refuses to overwrite an existing personal app or existing personal settings. Future app upgrades should preserve those settings and use a higher package version signed by the same publisher.
 
