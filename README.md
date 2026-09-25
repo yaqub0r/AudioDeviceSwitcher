@@ -2,6 +2,8 @@
 
 [![CI](https://github.com/yaqub0r/AudioDeviceSwitcher/actions/workflows/main.yaml/badge.svg)](https://github.com/yaqub0r/AudioDeviceSwitcher/actions)
 
+Distribution is planned through GitHub Releases with manual downloads. Public installer releases are not available yet; see [the release process](RELEASE.md) for build, signing, and publication requirements.
+
 This is the **yaqub0r-maintained fork** of [José Torres's Audio Device Switcher](https://github.com/josetr/AudioDeviceSwitcher). It retains the familiar app name and upstream attribution, with its own package identity and support at [this repository's issue tracker](https://github.com/yaqub0r/AudioDeviceSwitcher/issues). It is independent of the original Microsoft Store listing, which does not include these changes.
 
 ## Device selection recovery
