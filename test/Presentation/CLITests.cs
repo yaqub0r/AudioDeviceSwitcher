@@ -37,6 +37,6 @@ public class CLITests
     {
         var devices = selectedDevices.Select(x => new AudioDevice(x, x));
         var result = CLI.BuildCommand(type, devices.ToArray());
-        Assert.Matches("^AudioDeviceSwitcherPersonal " + expected + "$", result);
+        Assert.Matches("^AudioDeviceSwitcher " + expected + "$", result);
     }
 }

@@ -12,10 +12,10 @@
   <Identity
     Name="yaqub0r.AudioDeviceSwitcher"
     Publisher="CN=yaqub0r.AudioDeviceSwitcher"
-    Version="1.1.0.0" />
+    Version="1.1.1.0" />
 
   <Properties>
-    <DisplayName>Audio Device Switcher (Personal)</DisplayName>
+    <DisplayName>Audio Device Switcher</DisplayName>
     <PublisherDisplayName>yaqub0r</PublisherDisplayName>
     <Logo>Images\StoreLogo.png</Logo>
   </Properties>
@@ -34,7 +34,7 @@
       Executable="$targetnametoken$.exe"
       EntryPoint="$targetentrypoint$">
       <uap:VisualElements
-        DisplayName="Audio Device Switcher (Personal)"
+        DisplayName="Audio Device Switcher"
         Description="AudioDeviceSwitcher makes it easy to switch the default audio device used for both playback and recording. It supports custom hotkeys and also provides commands to easily interact with other software."
         BackgroundColor="transparent"
         Square150x150Logo="Images\Square150x150Logo.png"
@@ -48,6 +48,7 @@
           Executable="AudioDeviceSwitcher\AudioDeviceSwitcher.exe"
           EntryPoint="Windows.FullTrustApplication">
           <uap5:AppExecutionAlias>
+            <uap8:ExecutionAlias Alias="AudioDeviceSwitcher.exe" />
             <uap8:ExecutionAlias Alias="AudioDeviceSwitcherPersonal.exe" />
           </uap5:AppExecutionAlias>
         </uap5:Extension>
@@ -58,7 +59,7 @@
           <desktop:StartupTask
             TaskId="Startup"
             Enabled="false"
-            DisplayName="Audio Device Switcher (Personal)" />
+            DisplayName="Audio Device Switcher" />
         </desktop:Extension>
       </Extensions>
     </Application>

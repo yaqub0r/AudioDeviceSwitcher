@@ -11,8 +11,40 @@ const string publisher = "CN=yaqub0r.AudioDeviceSwitcher";
 var jsonOptions = new JsonSerializerOptions { WriteIndented = true };
 try
 {
-    if (args.Length != 2 || (args[0] != "prepare" && args[0] != "import" && args[0] != "verify" && args[0] != "verify-source"))
-        throw new ArgumentException("Usage: SettingsMigration prepare <new-backup-directory> | import <prepared-settings.json> | verify <prepared-settings.json> | verify-source <original-settings.json>");
+    if (args.Length != 2 || (args[0] != "prepare" && args[0] != "import" && args[0] != "verify" && args[0] != "verify-source" && args[0] != "backup" && args[0] != "verify-backup"))
+        throw new ArgumentException("Usage: SettingsMigration prepare|backup <new-backup-directory> | import|verify <prepared-settings.json> | verify-source <original-settings.json> | verify-backup <backup-directory>");
+
+    if (args[0] == "backup" || args[0] == "verify-backup")
+    {
+        var folder = Path.GetFullPath(args[1]);
+        var installed = new PackageManager().FindPackagesForUser(string.Empty).ToArray();
+        var fork = installed.Single(p => p.Id.Name == forkName && p.Id.Publisher == publisher);
+        var current = ApplicationDataManager.CreateForPackageFamily(fork.Id.FamilyName).LocalSettings.Values["settings"] as string
+            ?? throw new InvalidOperationException("The fork has no saved settings.");
+        var state = ReadState(current);
+        if (args[0] == "verify-backup")
+        {
+            if (File.ReadAllText(Path.Combine(folder, "fork-settings.json")) != current)
+                throw new InvalidOperationException("Fork settings differ from the pre-upgrade backup.");
+            Console.WriteLine($"Verified all settings unchanged, including {state.Commands.Count} commands and their saved device names.");
+            return 0;
+        }
+        if (Directory.Exists(folder))
+            throw new IOException("Use a new backup directory; existing backups are never overwritten.");
+        var legacy = installed.SingleOrDefault(p => p.Id.FamilyName == legacyFamily);
+        var legacySettings = legacy == null ? null : ApplicationDataManager.CreateForPackageFamily(legacyFamily).LocalSettings.Values["settings"] as string;
+        Directory.CreateDirectory(folder);
+        WriteNew(Path.Combine(folder, "fork-settings.json"), current);
+        if (legacySettings != null)
+            WriteNew(Path.Combine(folder, "store-settings.json"), legacySettings);
+        WriteNew(Path.Combine(folder, "packages.json"), JsonSerializer.Serialize(new
+        {
+            Fork = fork.Id.FullName, Store = legacy?.Id.FullName,
+            StoreSettingsBackedUp = legacySettings != null,
+        }, jsonOptions));
+        Console.WriteLine($"Backed up {state.Commands.Count} fork commands and {(legacySettings == null ? "no" : "the")} Store settings to {folder}");
+        return 0;
+    }
 
     if (args[0] == "verify-source")
     {

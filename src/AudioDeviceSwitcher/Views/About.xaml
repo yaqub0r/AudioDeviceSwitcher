@@ -13,6 +13,7 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <StackPanel Grid.Row="0" Spacing="5">
+            <TextBlock Text="Maintained fork by yaqub0r" />
             <StackPanel Orientation="Horizontal">
                 <TextBlock FontSize="18" FontWeight="Bold">
                     <Run Text="{x:Bind local:AudioSwitcherState.Title}" />
@@ -24,8 +25,8 @@
                 <HyperlinkButton NavigateUri="{x:Bind local:AudioSwitcherState.Repository}" Content="{x:Bind local:AudioSwitcherState.Repository}" />
             </StackPanel>
             <StackPanel Orientation="Horizontal" Spacing="5">
-                <TextBlock Text="Discord:" VerticalAlignment="Center" />
-                <HyperlinkButton NavigateUri="{x:Bind local:AudioSwitcherState.Discord}" Content="{x:Bind local:AudioSwitcherState.Discord}" />
+                <TextBlock Text="Issues:" VerticalAlignment="Center" />
+                <HyperlinkButton NavigateUri="{x:Bind local:AudioSwitcherState.Issues}" Content="{x:Bind local:AudioSwitcherState.Issues}" />
             </StackPanel>
         </StackPanel>
         <TextBlock Grid.Row="1" Text="Copyright (C) 2021 Jose Torres" FontSize="15" HorizontalAlignment="Center" Padding="10" />
