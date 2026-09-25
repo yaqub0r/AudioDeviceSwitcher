@@ -4,7 +4,7 @@
 
 Distribution is planned through GitHub Releases with manual downloads. Public installer releases are not available yet; see [the release process](RELEASE.md) for build, signing, and publication requirements.
 
-This fork fixes saved device selections in [josetr/AudioDeviceSwitcher](https://github.com/josetr/AudioDeviceSwitcher). The Microsoft Store version does not include these changes.
+This is the **yaqub0r-maintained fork** of [José Torres's Audio Device Switcher](https://github.com/josetr/AudioDeviceSwitcher). It retains the familiar app name and upstream attribution, with its own package identity and support at [this repository's issue tracker](https://github.com/yaqub0r/AudioDeviceSwitcher/issues). It is independent of the original Microsoft Store listing, which does not include these changes.
 
 ## Device selection recovery
 
@@ -24,9 +24,9 @@ dotnet test test/AudioDeviceSwitcher.Tests.csproj -p:Platform=x64 --filter "Full
 
 The excluded `AudioPageViewModelTests` are hardware integration tests: they switch real default devices and change device visibility. The new `DeviceRecoveryTests` use mocks and cover the page's persistence behavior without those side effects. CI runs the safe suite and builds an unsigned x64 MSIX plus a migration utility; it does not install drivers, sign packages, or publish to the Microsoft Store.
 
-## Personal installation
+## Installation
 
-The package is named **Audio Device Switcher (Personal)**, with identity `yaqub0r.AudioDeviceSwitcher`, publisher `CN=yaqub0r.AudioDeviceSwitcher`, and command alias `AudioDeviceSwitcherPersonal.exe`. It has a separate settings store and process identity. The Store app remains available for rollback, but only one should run at a time because their migrated hotkeys overlap.
+The package is named **Audio Device Switcher**, with identity `yaqub0r.AudioDeviceSwitcher`, publisher `CN=yaqub0r.AudioDeviceSwitcher`, and command alias `AudioDeviceSwitcher.exe`. Version 1.1.1 upgrades the earlier “(Personal)” build in place; its identity and settings store remain unchanged. The old `AudioDeviceSwitcherPersonal.exe` alias is retained for existing scripts. After migration and verification, uninstall the original Store app so shortcuts and hotkeys reach only this fork.
 
 See [INSTALL.md](INSTALL.md) for signing, migration, installation preview, and rollback. CI artifacts are unsigned development builds. The signing key stays on the owner's PC and is never uploaded. Certificate trust is an explicit step; the installer never changes trust stores.
 

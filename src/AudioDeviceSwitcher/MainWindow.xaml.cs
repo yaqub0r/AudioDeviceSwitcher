@@ -105,7 +105,7 @@ public sealed partial class MainWindow : DesktopWindow
             Restore();
             NavView.SelectedItem = NavView.SettingsItem;
         }));
-        menu.Add(new("&Community", async () => await Launcher.LaunchUriAsync(new(AudioSwitcherState.Discord))));
+        menu.Add(new("&Report an issue", async () => await Launcher.LaunchUriAsync(new(AudioSwitcherState.Issues))));
         menu.Add(new("&Open", () => Restore()));
         menu.Add(new("&Exit", () => Close()));
         menu.Track();
